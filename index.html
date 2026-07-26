@@ -68,7 +68,6 @@
         }
         .text-btn:hover { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
 
-        /* 음악 재생 컨트롤 버튼 (우측 상단 고정) */
         #audio-control {
             position: fixed; top: 20px; right: 20px; z-index: 1000;
             background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
@@ -80,16 +79,14 @@
     </style>
 </head>
 <body>
-    <!-- 몽환적인 배경 음악 오디오 요소 (loop 반복 재생) -->
-    <audio id="bgm" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=ambient-cosmos-110597.mp3" type="audio/mpeg">
-    </audio>
-    <button id="audio-control">🎵 BGM ON/OFF</button>
-
     <div id="ui">
         <h2>Wellcome!</h2>
         <p id="loading">Loading open source data....</p>
     </div>
+
+    <!-- 오디오 엘리먼트 (필요 시 주석 해제 및 경로 설정) -->
+    <!-- <audio id="bgm" src="your-music-file.mp3" loop></audio> -->
+    <button id="audio-control">🎵 BGM OFF</button>
 
     <div id="cinematic-overlay"></div>
     <div id="target-img-container">
@@ -97,11 +94,11 @@
     </div>
     <div id="info-panel">
         <div>
-            <h2 id="target-title">천체 이름</h2>
-            <div id="target-constellation" class="coord">별자리 | 위치 정보</div>
+            <h2 id="target-title">Name</h2>
+            <div id="target-constellation" class="coord">Constellation</div>
             
             <h3>Equipment</h3>
-            <p id="target-equip">...</p>
+            <p id="target-equip">equipments</p>
             
             <div class="action-btns">
                 <button class="text-btn" id="back-btn">Back</button>
@@ -114,14 +111,14 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // 천체 데이터 (Tarantula, SMC, 47 Tucanae 추가)
+        // 정확한 적경(RA) 및 적위(DEC) 좌표로 수정됨
         const customTargets = [
             {
                 name: "Tarantula Nebula (NGC 2070)",
-                constellation: "황새치자리 (Dorado)",
+                constellation: "Dorado",
                 ra: 84.67,     
                 dec: -69.10,   
-                size: 15.0,     
+                size: 15.0,      
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-18T12.14.04.png",
@@ -131,27 +128,53 @@
             },
             {
                 name: "Small Magellanic Cloud (SMC)",
-                constellation: "큰투칸자리 / 물뱀자리 (Tucana / Hydrus)",
+                constellation: "Hydrus",
                 ra: 13.15,     
                 dec: -72.80,   
-                size: 7.0,     
+                size: 7.0,      
                 images: [
                     {
-                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-12T23.22.50.png", // 본인 파일명으로 수정하세요
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-12T23.22.50.png",
                         equip: "Telescope: Askar FRA400\nMount: ZWO AM5\nCamera: ZWO ASI2600MC Pro\nFilters: Dual-Band Filter"
                     }
                 ]
             },
             {
                 name: "47 Tucanae (NGC 104)",
-                constellation: "투칸자리 (Tucana)",
-                ra: 6.02,     
+                constellation: "Tucana",
+                ra: 6.02,      
                 dec: -72.08,   
-                size: 1.0,     
+                size: 1.0,      
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-12T11.59.44.png",
                         equip: "Telescope: 10-inch Truss Tube Dobsonian\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: LRGB"
+                    }
+                ]
+            },
+            {
+                name: "Carina Nebula (NGC 3372)",
+                constellation: "Carina",
+                ra: 161.26,    
+                dec: -59.88,   
+                size: 15.0,      
+                images: [
+                    {
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-18T12.14.04.png",
+                        equip: "Telescope: 10-inch Truss Tube Dobsonian / Astrograph\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: Ha, OIII, SII Narrowband Mosaic"
+                    }
+                ]
+            },
+            {
+                name: "Pleiades Cluster (Messier 45)",
+                constellation: "Taurus",
+                ra: 56.86,     
+                dec: 24.11,    
+                size: 6.0,      
+                images: [
+                    {
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-18T12.14.04.png",
+                        equip: "Telescope: 10-inch Truss Tube Dobsonian / Astrograph\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: LRGB"
                     }
                 ]
             }
@@ -161,12 +184,15 @@
         let currentImageIndex = 0;
         let isCinematicMode = false;
 
-        // BGM 재생/일시정지 버튼 제어
         const bgm = document.getElementById('bgm');
         const audioControl = document.getElementById('audio-control');
         let isMusicPlaying = false;
 
         audioControl.addEventListener('click', () => {
+            if (!bgm) {
+                alert("BGM audio element is not configured.");
+                return;
+            }
             if (isMusicPlaying) {
                 bgm.pause();
                 audioControl.innerText = "🎵 BGM OFF";
@@ -404,8 +430,9 @@
             const targetImg = document.getElementById('target-img');
             targetImg.src = imgData.url;
 
+            // 사진이 2장 이상일 때만 More 버튼 표시
             const moreBtn = document.getElementById('more-btn');
-            if (selectedTarget.images.length > imgIndex + 1) {
+            if (selectedTarget.images.length > 1) {
                 moreBtn.style.display = 'inline-block';
             } else {
                 moreBtn.style.display = 'none';
@@ -442,17 +469,13 @@
         });
 
         document.getElementById('more-btn').addEventListener('click', () => {
-            if (selectedTarget && selectedTarget.images.length > currentImageIndex + 1) {
-                currentImageIndex++;
+            if (selectedTarget && selectedTarget.images.length > 1) {
+                currentImageIndex = (currentImageIndex + 1) % selectedTarget.images.length;
                 const imgData = selectedTarget.images[currentImageIndex];
                 
                 const targetImg = document.getElementById('target-img');
                 targetImg.src = imgData.url;
                 document.getElementById('target-equip').innerText = imgData.equip;
-
-                if (currentImageIndex >= selectedTarget.images.length - 1) {
-                    document.getElementById('more-btn').style.display = 'none';
-                }
             }
         });
 
