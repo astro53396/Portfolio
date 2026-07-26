@@ -48,6 +48,11 @@
             display: block;
         }
 
+        /* 플레이아데스 성단 선택 시 적용될 좌우 반전 스타일 */
+        #target-img-container.flipped #target-img {
+            transform: scaleX(-1);
+        }
+
         #info-panel {
             position: absolute; right: -60vw; top: 0; width: 55vw; height: 100vh;
             padding: 8vh 4vw; box-sizing: border-box; display: flex; flex-direction: column;
@@ -111,7 +116,6 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // 정확한 적경(RA) 및 적위(DEC) 좌표로 수정됨
         const customTargets = [
             {
                 name: "Tarantula Nebula (NGC 2070)",
@@ -173,14 +177,14 @@
                 size: 6.0,      
                 images: [
                     {
-                date: "12/Jun/2026",
-                url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-06-11T15.53.44.png",
-                equip: "Telescope: 10-inch Truss Tube Dobsonian\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: Ha, OIII, SII"
+                        date: "12/Jun/2026",
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-06-11T15.53.44.png",
+                        equip: "Telescope: 10-inch Truss Tube Dobsonian\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: Ha, OIII, SII"
                     },
                     {
-                date: "15/Nov/2021",
-                url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/1763692299899.png",
-                equip: "Telescope: Askar FRA400\nMount: ZWO AM5\nCamera: ZWO ASI2600MC Pro\nFilters: Dual-Band"
+                        date: "15/Nov/2021",
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/1763692299899.png",
+                        equip: "Telescope: Askar FRA400\nMount: ZWO AM5\nCamera: ZWO ASI2600MC Pro\nFilters: Dual-Band"
                     }
                 ]
             }
@@ -436,7 +440,13 @@
             const targetImg = document.getElementById('target-img');
             targetImg.src = imgData.url;
 
-            // 사진이 2장 이상일 때만 More 버튼 표시
+            // 플레이아데스 성단인 경우에만 flipped 클래스 추가
+            if (selectedTarget.name.includes("Pleiades")) {
+                container.classList.add('flipped');
+            } else {
+                container.classList.remove('flipped');
+            }
+
             const moreBtn = document.getElementById('more-btn');
             if (selectedTarget.images.length > 1) {
                 moreBtn.style.display = 'inline-block';
