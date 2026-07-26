@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background-color: #030712; color: #fff; font-family: sans-serif; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #030712; 
+            color: #ffffff; 
+            font-family: 'Noto Sans KR', sans-serif; 
+        }
         canvas { display: block; }
         
         #ui { 
@@ -13,7 +20,7 @@
             text-shadow: 1px 1px 2px black; opacity: 1; transition: opacity 1.5s ease-in-out; 
             z-index: 10;
         }
-        #loading { color: #ffeb3b; font-weight: bold; }
+        #loading { color: #ffffff; font-weight: 300; }
 
         #cinematic-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -45,24 +52,40 @@
             position: absolute; right: -60vw; top: 0; width: 55vw; height: 100vh;
             padding: 8vh 4vw; box-sizing: border-box; display: flex; flex-direction: column;
             justify-content: center; z-index: 600; transition: right 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-            overflow-y: auto; color: #fff;
+            overflow-y: auto; color: #ffffff;
         }
         #info-panel.active { right: 0; }
-        #info-panel h2 { color: #ffeb3b; margin: 0 0 10px 0; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        #info-panel .coord { color: #44aaff; font-size: 1.1rem; margin-bottom: 30px; font-weight: bold; }
-        #info-panel h3 { color: #ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; margin-top: 30px; font-size: 1.2rem; }
-        #info-panel p { line-height: 1.8; font-size: 1.05rem; color: #ddd; white-space: pre-line; margin: 10px 0; }
+        #info-panel h2 { color: #ffffff; margin: 0 0 10px 0; font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
+        #info-panel .coord { color: #ffffff; font-size: 1rem; margin-bottom: 30px; font-weight: 300; opacity: 0.8; }
+        #info-panel h3 { color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; margin-top: 30px; font-size: 1.1rem; font-weight: 400; }
+        #info-panel p { line-height: 1.8; font-size: 1rem; color: #ffffff; white-space: pre-line; margin: 10px 0; font-weight: 300; }
 
         .action-btns { margin-top: 40px; display: flex; gap: 30px; }
         .text-btn {
-            background: none; border: none; color: #aaa; font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; padding: 0; transition: color 0.3s; text-transform: uppercase;
-            letter-spacing: 1.5px;
+            background: none; border: none; color: #ffffff; font-size: 1.1rem; font-weight: 400;
+            cursor: pointer; padding: 0; transition: opacity 0.3s; text-transform: uppercase;
+            letter-spacing: 1.5px; opacity: 0.7;
         }
-        .text-btn:hover { color: #fff; text-shadow: 0 0 10px rgba(68,170,255,0.8); }
+        .text-btn:hover { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
+
+        /* 음악 재생 컨트롤 버튼 (우측 상단 고정) */
+        #audio-control {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 8px 15px; border-radius: 20px; cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; backdrop-filter: blur(5px);
+            transition: background 0.3s;
+        }
+        #audio-control:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body>
+    <!-- 몽환적인 배경 음악 오디오 요소 (loop 반복 재생) -->
+    <audio id="bgm" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=ambient-cosmos-110597.mp3" type="audio/mpeg">
+    </audio>
+    <button id="audio-control">🎵 BGM ON/OFF</button>
+
     <div id="ui">
         <h2>Wellcome!</h2>
         <p id="loading">Loading open source data....</p>
@@ -91,6 +114,7 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        // 천체 데이터 (Tarantula, SMC, 47 Tucanae 추가)
         const customTargets = [
             {
                 name: "Tarantula Nebula (NGC 2070)",
@@ -104,12 +128,56 @@
                         equip: "Telescope: 10-inch Truss Tube Dobsonian / Astrograph\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: Ha, OIII, SII Narrowband Mosaic"
                     }
                 ]
+            },
+            {
+                name: "Small Magellanic Cloud (SMC)",
+                constellation: "큰투칸자리 / 물뱀자리 (Tucana / Hydrus)",
+                ra: 13.15,     
+                dec: -72.80,   
+                size: 20.0,     
+                images: [
+                    {
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/smc_image_file.png", // 본인 파일명으로 수정하세요
+                        equip: "Telescope: Askar FRA400\nMount: ZWO AM5\nCamera: ZWO ASI2600MC Pro\nFilters: Dual-Band Filter"
+                    }
+                ]
+            },
+            {
+                name: "47 Tucanae (NGC 104)",
+                constellation: "투칸자리 (Tucana)",
+                ra: 6.02,     
+                dec: -72.08,   
+                size: 12.0,     
+                images: [
+                    {
+                        url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/47tuc_image_file.png", // 본인 파일명으로 수정하세요
+                        equip: "Telescope: 10-inch Truss Tube Dobsonian\nMount: Paramount ME II\nCamera: ZWO ASI2600MM Pro\nFilters: LRGB"
+                    }
+                ]
             }
         ];
 
         let selectedTarget = null;
         let currentImageIndex = 0;
         let isCinematicMode = false;
+
+        // BGM 재생/일시정지 버튼 제어
+        const bgm = document.getElementById('bgm');
+        const audioControl = document.getElementById('audio-control');
+        let isMusicPlaying = false;
+
+        audioControl.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                bgm.pause();
+                audioControl.innerText = "🎵 BGM OFF";
+                isMusicPlaying = false;
+            } else {
+                bgm.play().then(() => {
+                    audioControl.innerText = "🔊 BGM ON";
+                    isMusicPlaying = true;
+                }).catch(e => console.log("Audio play blocked:", e));
+            }
+        });
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
@@ -185,7 +253,7 @@
 
                 const lineGeometry = new THREE.BufferGeometry();
                 lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
-                scene.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.35 })));
+                scene.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 })));
 
                 createSkyTargets();
 
@@ -204,7 +272,6 @@
 
         const targetMeshes = [];
         const markerGroups = [];
-        const textureLoader = new THREE.TextureLoader();
 
         function createSoftTexture(imageUrl, callback) {
             const img = new Image();
@@ -257,11 +324,11 @@
                 }
                 const circleGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
                 const dashedMaterial = new THREE.LineDashedMaterial({
-                    color: 0x44aaff,
+                    color: 0xffffff,
                     dashSize: 2.0,
                     gapSize: 1.0,
                     transparent: true,
-                    opacity: 0.95
+                    opacity: 0.8
                 });
                 const dashedCircle = new THREE.Line(circleGeometry, dashedMaterial);
                 dashedCircle.computeLineDistances();
@@ -291,7 +358,7 @@
 
         window.addEventListener('click', (event) => {
             if (isCinematicMode) return;
-            if (event.target.closest('#info-panel')) return;
+            if (event.target.closest('#info-panel') || event.target.closest('#audio-control')) return;
 
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
