@@ -67,15 +67,6 @@
             letter-spacing: 1.5px; opacity: 0.7;
         }
         .text-btn:hover { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
-
-        #audio-control {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff; padding: 8px 15px; border-radius: 20px; cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif; font-size: 0.9rem; backdrop-filter: blur(5px);
-            transition: background 0.3s;
-        }
-        #audio-control:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body>
@@ -84,8 +75,8 @@
         <p id="loading">Loading open source data....</p>
     </div>
 
-    <!-- <audio id="bgm" src="your-music-file.mp3" loop></audio> -->
-    <button id="audio-control">🎵 BGM OFF</button>
+    <!-- 몽환적인 분위기의 배경음악 오디오 엘리먼트 -->
+    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=space-chillout-14195.mp3" loop autoplay></audio>
 
     <div id="cinematic-overlay"></div>
     <div id="target-img-container">
@@ -116,7 +107,7 @@
                 constellation: "Dorado",
                 ra: 84.67,     
                 dec: -69.10,   
-                size: 15.0,      
+                size: 15.0,     
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-18T12.14.04.png",
@@ -129,7 +120,7 @@
                 constellation: "Tucana",
                 ra: 13.15,     
                 dec: -72.80,   
-                size: 7.0,      
+                size: 7.0,     
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-12T23.22.50.png",
@@ -142,7 +133,7 @@
                 constellation: "Tucana",
                 ra: 6.02,      
                 dec: -72.08,   
-                size: 1.5,      
+                size: 1.5,     
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-12T11.59.44.png",
@@ -155,7 +146,7 @@
                 constellation: "Carina",
                 ra: 161.26,    
                 dec: -59.88,   
-                size: 15.0,      
+                size: 15.0,     
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/2026-07-18T10.34.23.png",
@@ -168,7 +159,7 @@
                 constellation: "Taurus",
                 ra: 56.87,
                 dec: 24.11,
-                size: 6.0,      
+                size: 6.0,     
                 images: [
                     {
                         date: "12/Jun/2026",
@@ -187,7 +178,7 @@
                 constellation: "Cepheus",
                 ra: 324.70,
                 dec: 57.30,
-                size: 6.0,      
+                size: 6.0,     
                 images: [
                     {
                         date: "12/Jun/2026",
@@ -211,7 +202,7 @@
                 constellation: "Vulpecula",
                 ra: 299.90,
                 dec: 22.72,
-                size: 1.0,      
+                size: 1.0,     
                 images: [
                     {
                         url: "https://raw.githubusercontent.com/astro53396/Portfolio/main/1762395771167.png",
@@ -225,26 +216,13 @@
         let currentImageIndex = 0;
         let isCinematicMode = false;
 
+        // 웹 브라우저 정책(Autoplay Policy) 우회를 위한 첫 클릭 재생 처리
         const bgm = document.getElementById('bgm');
-        const audioControl = document.getElementById('audio-control');
-        let isMusicPlaying = false;
-
-        audioControl.addEventListener('click', () => {
-            if (!bgm) {
-                alert("BGM audio element is not configured.");
-                return;
+        window.addEventListener('click', () => {
+            if (bgm && bgm.paused) {
+                bgm.play().catch(e => console.log("Audio play blocked:", e));
             }
-            if (isMusicPlaying) {
-                bgm.pause();
-                audioControl.innerText = "🎵 BGM OFF";
-                isMusicPlaying = false;
-            } else {
-                bgm.play().then(() => {
-                    audioControl.innerText = "🔊 BGM ON";
-                    isMusicPlaying = true;
-                }).catch(e => console.log("Audio play blocked:", e));
-            }
-        });
+        }, { once: true });
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
@@ -432,7 +410,7 @@
 
         window.addEventListener('click', (event) => {
             if (isCinematicMode) return;
-            if (event.target.closest('#info-panel') || event.target.closest('#audio-control')) return;
+            if (event.target.closest('#info-panel')) return;
 
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
