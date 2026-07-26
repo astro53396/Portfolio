@@ -213,26 +213,59 @@
         let currentImageIndex = 0;
         let isCinematicMode = false;
 
+        // 부드럽고 몽환적인 공간감의 웹 오디오 패드(Ambient Synth Pad + Lowpass Filter) 구현
         let audioCtx = null;
         function initAmbientAudio() {
             if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             
-            const frequencies = [130.81, 196.00, 220.00, 261.63, 329.63];
-            
-            frequencies.forEach((freq, idx) => {
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                
-                gainNode.gain.setValueAtTime(0.015, audioCtx.currentTime);
-                
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                osc.start();
-            });
+            // 몽환적인 공간감을 주는 에테르 화음 (우주 명상 음악 코드)
+            const chords = [
+                [130.81, 196.00, 261.63, 392.00], // C major
+                [110.00, 164.81, 220.00, 329.63], // A minor
+                [146.83, 220.00, 293.66, 440.00], // D minor
+                [98.00, 146.83, 196.00, 293.66]   // G major
+            ];
+
+            // 저주파 필터를 걸어 뻣뻣한 기계음을 깎아내고 부드러운 패드 사운드 만들기
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(450, audioCtx.currentTime);
+            filter.connect(audioCtx.destination);
+
+            let chordIndex = 0;
+
+            function playChord() {
+                if (!audioCtx || audioCtx.state === 'closed') return;
+                const notes = chords[chordIndex];
+                chordIndex = (chordIndex + 1) % chords.length;
+
+                notes.forEach(freq => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    // 부드러운 사인파와 은은한 삼각파 조합
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                    // 소리가 서서히 커졌다가(Fade In) 부드럽게 사라지도록(Fade Out) 설정 (LFO 효과)
+                    const now = audioCtx.currentTime;
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.012, now + 3); // 서서히 커짐
+                    gainNode.gain.linearRampToValueAtTime(0, now + 8);      // 서서히 작아짐
+
+                    osc.connect(gainNode);
+                    gainNode.connect(filter);
+
+                    osc.start(now);
+                    osc.stop(now + 8.5);
+                });
+
+                // 7초마다 다음 화음으로 부드럽게 전환
+                setTimeout(playChord, 7000);
+            }
+
+            playChord();
         }
 
         window.addEventListener('click', () => {
