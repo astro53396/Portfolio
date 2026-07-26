@@ -346,7 +346,8 @@
         const targetMeshes = [];
         const markerGroups = [];
 
-        function createSoftTexture(imageUrl, isPleiades, callback) {
+        // target 인자 추가
+        function createSoftTexture(target, imageUrl, callback) {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = imageUrl;
@@ -393,15 +394,14 @@
                     transparent: true,
                     opacity: 0.8,
                     side: THREE.DoubleSide,
-                    blending: THREE.AdditiveBlending
-                    depthWrite: false
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false // 쉼표 추가 완료
                 });
                 const imgPlane = new THREE.Mesh(planeGeo, planeMat);
                 imgPlane.position.z = -1;
 
-                const isPleiades = target.name.includes("Pleiades");
-
-                createSoftTexture(target.images[0].url, isPleiades, (softTexture) => {
+                // target 객체 전체를 전달
+                createSoftTexture(target, target.images[0].url, (softTexture) => {
                     planeMat.map = softTexture;
                     planeMat.needsUpdate = true;
                 });
