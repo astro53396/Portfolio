@@ -357,9 +357,18 @@
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
 
-                if (isPleiades) {
+                const isReversed = target.name.includes("Pleiades");
+                const isRotated = target.name.includes("Andromeda galaxy");
+
+                if (isReversed) {
                     ctx.translate(size, 0);
                     ctx.scale(-1, 1);
+                }
+
+                if (isRotated) {
+                    ctx.translate(size / 2, size / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.translate(-size / 2, -size / 2);
                 }
 
                 ctx.drawImage(img, 0, 0, size, size);
