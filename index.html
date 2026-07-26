@@ -75,9 +75,6 @@
         <p id="loading">Loading open source data....</p>
     </div>
 
-    <!-- 몽환적인 분위기의 배경음악 오디오 엘리먼트 -->
-    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=space-chillout-14195.mp3" loop autoplay></audio>
-
     <div id="cinematic-overlay"></div>
     <div id="target-img-container">
         <img id="target-img" src="" alt="Target Image">
@@ -216,11 +213,36 @@
         let currentImageIndex = 0;
         let isCinematicMode = false;
 
-        // 웹 브라우저 정책(Autoplay Policy) 우회를 위한 첫 클릭 재생 처리
-        const bgm = document.getElementById('bgm');
+        // Web Audio API를 활용한 몽환적인 우주 배경음(Ambient Synth Pad) 자동 재생
+        let audioCtx = null;
+        function initAmbientAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 우주 분위기에 어울리는 화음 주파수 (C Major / Am 계열 패드)
+            const frequencies = [130.81, 196.00, 220.00, 261.63, 329.63]; // C3, G3, A3, C4, E4
+            
+            frequencies.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                // 은은하게 울리는 볼륨 설정
+                gainNode.gain.setValueAtTime(0.015, audioCtx.currentTime);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start();
+            });
+        }
+
         window.addEventListener('click', () => {
-            if (bgm && bgm.paused) {
-                bgm.play().catch(e => console.log("Audio play blocked:", e));
+            if (!audioCtx) {
+                initAmbientAudio();
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
         }, { once: true });
 
