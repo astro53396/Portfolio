@@ -48,11 +48,6 @@
             display: block;
         }
 
-        /* 플레이아데스 성단 선택 시 적용될 좌우 반전 스타일 */
-        #target-img-container.flipped #target-img {
-            transform: scaleX(-1);
-        }
-
         #info-panel {
             position: absolute; right: -60vw; top: 0; width: 55vw; height: 100vh;
             padding: 8vh 4vw; box-sizing: border-box; display: flex; flex-direction: column;
@@ -89,7 +84,6 @@
         <p id="loading">Loading open source data....</p>
     </div>
 
-    <!-- 오디오 엘리먼트 (필요 시 주석 해제 및 경로 설정) -->
     <!-- <audio id="bgm" src="your-music-file.mp3" loop></audio> -->
     <button id="audio-control">🎵 BGM OFF</button>
 
@@ -309,7 +303,7 @@
         const targetMeshes = [];
         const markerGroups = [];
 
-        function createSoftTexture(imageUrl, callback) {
+        function createSoftTexture(imageUrl, isPleiades, callback) {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = imageUrl;
@@ -319,6 +313,12 @@
                 canvas.width = size;
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
+
+                // 플레이아데스 성단인 경우에만 캔버스 단계에서 좌우 반전(거울상) 적용
+                if (isPleiades) {
+                    ctx.translate(size, 0);
+                    ctx.scale(-1, 1);
+                }
 
                 ctx.drawImage(img, 0, 0, size, size);
 
@@ -347,7 +347,9 @@
                 const imgPlane = new THREE.Mesh(planeGeo, planeMat);
                 imgPlane.position.z = -1;
 
-                createSoftTexture(target.images[0].url, (softTexture) => {
+                const isPleiades = target.name.includes("Pleiades");
+
+                createSoftTexture(target.images[0].url, isPleiades, (softTexture) => {
                     planeMat.map = softTexture;
                     planeMat.needsUpdate = true;
                 });
@@ -438,14 +440,9 @@
             
             const container = document.getElementById('target-img-container');
             const targetImg = document.getElementById('target-img');
+            
+            // 상세 보기창 이미지는 원래 방향 그대로 표시
             targetImg.src = imgData.url;
-
-            // 플레이아데스 성단인 경우에만 flipped 클래스 추가
-            if (selectedTarget.name.includes("Pleiades")) {
-                container.classList.add('flipped');
-            } else {
-                container.classList.remove('flipped');
-            }
 
             const moreBtn = document.getElementById('more-btn');
             if (selectedTarget.images.length > 1) {
