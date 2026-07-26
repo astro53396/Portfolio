@@ -359,7 +359,6 @@
         const targetMeshes = [];
         const markerGroups = [];
 
-        // target 인자 추가
         function createSoftTexture(target, imageUrl, callback) {
             const img = new Image();
             img.crossOrigin = "anonymous";
@@ -372,6 +371,7 @@
                 const ctx = canvas.getContext('2d');
 
                 const isReversed = target.name.includes("Pleiades");
+                const isRotated = target.name.includes("Triangulum galaxy);
                 const isRotated = target.name.includes("Andromeda galaxy");
 
                 if (isReversed) {
@@ -408,12 +408,11 @@
                     opacity: 0.8,
                     side: THREE.DoubleSide,
                     blending: THREE.AdditiveBlending,
-                    depthWrite: false // 쉼표 추가 완료
+                    depthWrite: false
                 });
                 const imgPlane = new THREE.Mesh(planeGeo, planeMat);
                 imgPlane.position.z = -1;
 
-                // target 객체 전체를 전달
                 createSoftTexture(target, target.images[0].url, (softTexture) => {
                     planeMat.map = softTexture;
                     planeMat.needsUpdate = true;
