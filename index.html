@@ -75,6 +75,9 @@
         <p id="loading">Loading open source data....</p>
     </div>
 
+    <!-- 몽환적인 분위기의 배경음악 오디오 엘리먼트 -->
+    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=space-chillout-14195.mp3" loop autoplay></audio>
+
     <div id="cinematic-overlay"></div>
     <div id="target-img-container">
         <img id="target-img" src="" alt="Target Image">
@@ -213,66 +216,11 @@
         let currentImageIndex = 0;
         let isCinematicMode = false;
 
-        // 부드럽고 몽환적인 공간감의 웹 오디오 패드(Ambient Synth Pad + Lowpass Filter) 구현
-        let audioCtx = null;
-        function initAmbientAudio() {
-            if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // 몽환적인 공간감을 주는 에테르 화음 (우주 명상 음악 코드)
-            const chords = [
-                [130.81, 196.00, 261.63, 392.00], // C major
-                [110.00, 164.81, 220.00, 329.63], // A minor
-                [146.83, 220.00, 293.66, 440.00], // D minor
-                [98.00, 146.83, 196.00, 293.66]   // G major
-            ];
-
-            // 저주파 필터를 걸어 뻣뻣한 기계음을 깎아내고 부드러운 패드 사운드 만들기
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(450, audioCtx.currentTime);
-            filter.connect(audioCtx.destination);
-
-            let chordIndex = 0;
-
-            function playChord() {
-                if (!audioCtx || audioCtx.state === 'closed') return;
-                const notes = chords[chordIndex];
-                chordIndex = (chordIndex + 1) % chords.length;
-
-                notes.forEach(freq => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-
-                    // 부드러운 사인파와 은은한 삼각파 조합
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-                    // 소리가 서서히 커졌다가(Fade In) 부드럽게 사라지도록(Fade Out) 설정 (LFO 효과)
-                    const now = audioCtx.currentTime;
-                    gainNode.gain.setValueAtTime(0, now);
-                    gainNode.gain.linearRampToValueAtTime(0.012, now + 3); // 서서히 커짐
-                    gainNode.gain.linearRampToValueAtTime(0, now + 8);      // 서서히 작아짐
-
-                    osc.connect(gainNode);
-                    gainNode.connect(filter);
-
-                    osc.start(now);
-                    osc.stop(now + 8.5);
-                });
-
-                // 7초마다 다음 화음으로 부드럽게 전환
-                setTimeout(playChord, 7000);
-            }
-
-            playChord();
-        }
-
+        // 웹 브라우저 정책(Autoplay Policy) 우회를 위한 첫 클릭 재생 처리
+        const bgm = document.getElementById('bgm');
         window.addEventListener('click', () => {
-            if (!audioCtx) {
-                initAmbientAudio();
-            } else if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            if (bgm && bgm.paused) {
+                bgm.play().catch(e => console.log("Audio play blocked:", e));
             }
         }, { once: true });
 
