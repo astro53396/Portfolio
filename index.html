@@ -75,9 +75,6 @@
         <p id="loading">Loading open source data....</p>
     </div>
 
-    <!-- 몽환적인 분위기의 배경음악 오디오 엘리먼트 -->
-    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=space-chillout-14195.mp3" loop autoplay></audio>
-
     <div id="cinematic-overlay"></div>
     <div id="target-img-container">
         <img id="target-img" src="" alt="Target Image">
@@ -215,14 +212,6 @@
         let selectedTarget = null;
         let currentImageIndex = 0;
         let isCinematicMode = false;
-
-        // 웹 브라우저 정책(Autoplay Policy) 우회를 위한 첫 클릭 재생 처리
-        const bgm = document.getElementById('bgm');
-        window.addEventListener('click', () => {
-            if (bgm && bgm.paused) {
-                bgm.play().catch(e => console.log("Audio play blocked:", e));
-            }
-        }, { once: true });
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
