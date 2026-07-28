@@ -388,6 +388,56 @@
             return { x, y, z };
         }
 
+        // 은하수 파티클 생성 함수
+        function createMilkyWay() {
+            const particleCount = 25000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+
+            const galacticCenter = get3DCoordinates(266, -29, 490);
+            const centerVector = new THREE.Vector3(galacticCenter.x, galacticCenter.y, galacticCenter.z).normalize();
+
+            for (let i = 0; i < particleCount; i++) {
+                const u = (Math.random() + Math.random() + Math.random()) / 3;
+                const distanceSpread = (u - 0.5) * 450;
+
+                const randomAngle = Math.random() * Math.PI * 2;
+                const perp1 = new THREE.Vector3(-centerVector.z, 0, centerVector.x).normalize();
+                const perp2 = new THREE.Vector3().crossVectors(centerVector, perp1).normalize();
+
+                const x = galacticCenter.x + centerVector.x * distanceSpread + (Math.cos(randomAngle) * perp1.x + Math.sin(randomAngle) * perp2.x) * (180 - Math.abs(distanceSpread) * 0.3);
+                const y = galacticCenter.y + centerVector.y * distanceSpread + (Math.cos(randomAngle) * perp1.y + Math.sin(randomAngle) * perp2.y) * (180 - Math.abs(distanceSpread) * 0.3);
+                const z = galacticCenter.z + centerVector.z * distanceSpread + (Math.cos(randomAngle) * perp1.z + Math.sin(randomAngle) * perp2.z) * (180 - Math.abs(distanceSpread) * 0.3);
+
+                positions.push(x, y, z);
+
+                const distanceFromCenter = Math.abs(distanceSpread);
+                const brightness = Math.max(0.05, 1 - (distanceFromCenter / 220));
+                
+                const r = brightness * (0.8 + Math.random() * 0.2);
+                const g = brightness * (0.85 + Math.random() * 0.15);
+                const b = brightness * (0.95 + Math.random() * 0.05);
+
+                colors.push(r, g, b);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 1.8,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.55,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const milkyWayParticles = new THREE.Points(geometry, material);
+            scene.add(milkyWayParticles);
+        }
+
         async function initSky() {
             try {
                 const starsUrl = 'https://raw.githubusercontent.com/ofrohn/d3-celestial/master/data/stars.6.json';
@@ -431,6 +481,9 @@
                 const lineGeometry = new THREE.BufferGeometry();
                 lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
                 scene.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 })));
+
+                // 은하수 파티클 추가 호출
+                createMilkyWay();
 
                 createSkyTargets();
 
